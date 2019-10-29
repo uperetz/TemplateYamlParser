@@ -1,7 +1,7 @@
 #include<sstream>
 #include<iostream>
 #include<any>
-#include"argument.h"
+#include"arguments.h"
 #include"parser.h"
 #include<stdint.h>
 #include<string>
@@ -44,7 +44,7 @@ int main() {
 
     std::string f;
 
-    p.parse_arguments({"a", "-bool", "-uint32_t", "23", "-int", "213", "mc", "-string", "aba"});
+    p.parse_arguments({"a", "-bool", "-uint32_t", "23", "-int", "213", "mc", "-string", "aba", "23"});
     p.collect(b, x, z, c, y, e, a, f);
     std::cout<<b<<" "<<x<<" "<<z<<" "<<c<<" "<<y<<" "<<e<<" "<<a<<" "<<f<<"\n";
 
