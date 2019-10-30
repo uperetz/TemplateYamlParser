@@ -5,6 +5,7 @@
 
 class Parser {
     public:
+    
     Parser(RequiredNames&, size_t positional = 0, VecOptional& vopt = VecOptional());
     Parser(RequiredNames&, OptionalNames&, size_t positional = 0, VecOptional& = VecOptional());
     Parser(RequiredNames&, OptionalNames&, Booleans&, size_t positional = 0, VecOptional& = VecOptional());
@@ -12,6 +13,7 @@ class Parser {
     Parser(OptionalNames&, Booleans&, size_t positional = 0, VecOptional& vopt = VecOptional());
 
     void parse_arguments(const std::vector<std::string>& arguments); 
+    void parse_arguments(int argc, const char** argv);
 
     template<typename... Ts>
     void collect(Ts&... variables) { args.collect(variables...); }
@@ -19,7 +21,7 @@ class Parser {
     private:
 
     ArgList args;
-    Booleans booleans;
+    std::set<std::string> booleans;
 };
     
 #include"parser.hpp"

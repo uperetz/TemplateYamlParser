@@ -7,7 +7,7 @@
 #include<string>
 #include<vector>
 
-int main() {
+int main(int argc, const char* argv[]) {
     int x;
     uint32_t y;
     std::string z;
@@ -45,6 +45,14 @@ int main() {
     std::string f;
 
     p.parse_arguments({"a", "-bool", "-uint32_t", "23", "-int", "213", "mc", "-string", "aba", "23"});
+    p.collect(b, x, z, c, y, e, a, f);
+    std::cout<<b<<" "<<x<<" "<<z<<" "<<c<<" "<<y<<" "<<e<<" "<<a<<" "<<f<<"\n";
+
+    std::cout<<"\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n";
+    p = Parser( RequiredNames{"int", "string", "uint32_t"},
+                OptionalNames{ {"std::string", std::string("Hello world")} },
+                Booleans{"bool"}, 3);//, VecOptional{std::string("astring")});
+    p.parse_arguments(argc, argv);
     p.collect(b, x, z, c, y, e, a, f);
     std::cout<<b<<" "<<x<<" "<<z<<" "<<c<<" "<<y<<" "<<e<<" "<<a<<" "<<f<<"\n";
 

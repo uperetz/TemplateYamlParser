@@ -55,4 +55,7 @@ void Parser::parse_arguments(const std::vector<std::string>& arguments) {
         throw std::invalid_argument(name + " expected an argument, but none are left!");
 }
 
+void Parser::parse_arguments(int argc, const char** argv) {
+    parse_arguments(std::vector<std::string>(argv + 1, argv + argc));
+}
 #endif /* PARSER_HPP */
