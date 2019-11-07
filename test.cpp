@@ -1,11 +1,17 @@
 #include<sstream>
 #include<iostream>
 #include<any>
-#include"arguments.h"
 #include"parser.h"
 #include<stdint.h>
 #include<string>
 #include<vector>
+
+void f1(int x, char y) {
+    std::cout<<"Ran f1("<<x<<", "<<y<<")\n";
+}
+void f2(uint32_t x, std::string& y) {
+    std::cout<<"Ran f2("<<x<<", "<<y<<")\n";
+}
 
 int main(int argc, const char* argv[]) {
     int x;
@@ -21,11 +27,12 @@ int main(int argc, const char* argv[]) {
    
     RequiredNames req{"int", "string", "uint32_t"};
     OptionalNames opt{ {"char", 'c'} };
-    ArgList argm(req, opt, 5, {std::string("hi"), 21, 'a'});
+    Parser argm(req, opt, 5, {std::string("hi"), 21, 'a'});
 
     Booleans bla{"abc", "def"};
     Booleans bl(bla);
 
+    // Comment one of me to see required errors
     argm.set("int", "3");
     argm.set("uint32_t", "123");
     argm.set("string", "yay");
@@ -33,8 +40,19 @@ int main(int argc, const char* argv[]) {
     argm.set(0, "321");
     argm.set(1, "1");
 
-    argm.collect(w, x, z, y, a, b, c, d, e);
-    std::cout<<x<<" : "<<y<<" : "<<z<<" : "<<w<<" : "<<a<<" : "<<b<<" : "<<c<<" : "<<d<<" : "<<e<<"\n";
+    argm.run_one_of(
+        ArgumentPack(f1, "int", x, 
+                         "char", w),
+        ArgumentPack(f2, "uint32_t", y,
+                         "string", z)
+    );
+    
+    // argm.set("uint64_t", "21"); Uncomment to see not in argument list
+    argm.collect_named("string", c,
+                       //"uint64_t", a,
+                       "char", e,
+                       "int", d);
+    std::cout<<" : "<<" : "<<e<<" : "<<d<<"\n";
 
     std::cout<<"\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n";
 
@@ -45,16 +63,27 @@ int main(int argc, const char* argv[]) {
     std::string f;
 
     p.parse_arguments({"a", "-bool", "-uint32_t", "23", "-int", "213", "mc", "-string", "aba", "23"});
-    p.collect(b, x, z, c, y, e, a, f);
-    std::cout<<b<<" "<<x<<" "<<z<<" "<<c<<" "<<y<<" "<<e<<" "<<a<<" "<<f<<"\n";
-
+    p.collect_named("bool", b,
+                    "int", x,
+                    "string", z, 
+                    "uint32_t", y);
+    std::cout<<b<<" "<<x<<" "<<z<<" "<<y<<"\n";
+    p.collect_positional(e, f, a);
+    std::cout<<e<<" "<<f<<" "<<a<<"\n";
+    
     std::cout<<"\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n";
+    // ./test -int 3 -string ab -uint32_t 101 aa 2 a
     p = Parser( RequiredNames{"int", "string", "uint32_t"},
                 OptionalNames{ {"std::string", std::string("Hello world")} },
-                Booleans{"bool"}, 3);//, VecOptional{std::string("astring")});
+                Booleans{"bool"}, 3, VecOptional{std::string("astring")});
     p.parse_arguments(argc, argv);
-    p.collect(b, x, z, c, y, e, a, f);
-    std::cout<<b<<" "<<x<<" "<<z<<" "<<c<<" "<<y<<" "<<e<<" "<<a<<" "<<f<<"\n";
+    p.collect_named("bool", b,
+                    "int", x,
+                    "string", z, 
+                    "uint32_t", y);
+    std::cout<<b<<" "<<x<<" "<<z<<" "<<y<<"\n";
+    p.collect_positional(e, f, a);
+    std::cout<<e<<" "<<f<<" "<<a<<"\n";
 
     return 0;
 }

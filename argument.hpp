@@ -2,6 +2,8 @@
 #ifndef ARGUMENT_HPP
 #define ARGUMENT_HPP 
 
+#include"argument.h"
+
 std::string debug_argument(const std::string& name = "", int index = -1) {
     return " faild on " + (name.empty() ?
                               (index > -1 ?
@@ -27,7 +29,7 @@ class Argument::RequiredException: public std::exception {
 
 template<typename T>
 T Argument::put(T& lvalue, const std::string& name, int index) {
-    if (repr.empty())
+    if (repr.empty()) {
         if (default_value.has_value())
             try {
                 lvalue = std::any_cast<T>(default_value);
@@ -36,6 +38,7 @@ T Argument::put(T& lvalue, const std::string& name, int index) {
             }
         else
             throw RequiredException(debug_argument(name, index));
+    }
     cast_repr<T>(lvalue);
     return lvalue;
 }
