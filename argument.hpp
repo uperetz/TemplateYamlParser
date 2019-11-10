@@ -3,13 +3,14 @@
 #define ARGUMENT_HPP 
 
 #include"argument.h"
+#include<sstream>
 
 std::string debug_argument(const std::string& name = "", int index = -1) {
-    return " faild on " + (name.empty() ?
-                              (index > -1 ?
-                                 "positional argument " + std::to_string(index)
-                              : "")
-                          : "argument '" + name + "'") + ".";
+    return " failed on " + (name.empty() ?
+                               (index > -1 ?
+                                  "positional argument " + std::to_string(index)
+                               : "")
+                           : "argument '" + name + "'") + ".";
 }
 
 class Argument::RequiredException: public std::exception {

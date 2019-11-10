@@ -1,4 +1,3 @@
-#include<sstream>
 #include<iostream>
 #include<any>
 #include"parser.h"
@@ -13,7 +12,7 @@ void f2(uint32_t x, std::string& y) {
     std::cout<<"Ran f2("<<x<<", "<<y<<")\n";
 }
 
-int main(int argc, const char* argv[]) {
+int main(int argc, char* argv[]) {
     int x;
     uint32_t y;
     std::string z;
@@ -70,13 +69,14 @@ int main(int argc, const char* argv[]) {
     std::cout<<b<<" "<<x<<" "<<z<<" "<<y<<"\n";
     p.collect_positional(e, f, a);
     std::cout<<e<<" "<<f<<" "<<a<<"\n";
+    std::cout<<p.get<bool>("bool")<<" And "<<p.get<std::string>("string")<<"\n";
     
     std::cout<<"\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n";
     // ./test -int 3 -string ab -uint32_t 101 aa 2 a
     p = Parser( RequiredNames{"int", "string", "uint32_t"},
                 OptionalNames{ {"std::string", std::string("Hello world")} },
                 Booleans{"bool"}, 3, VecOptional{std::string("astring")});
-    p.parse_arguments(argc, argv);
+    p.parse_arguments(argc, argv, false); // Remove false for validation.
     p.collect_named("bool", b,
                     "int", x,
                     "string", z, 

@@ -1,11 +1,12 @@
 // Parser implementation
-#ifndef ARGLIST_HPP
-#define ARGLIST_HPP
+#ifndef PARSER_HPP
+#define PARSER_HPP
 
 #include"parser.h"
+#include<algorithm>
 
 OptionalNames add_bool_options(Booleans bools, OptionalNames& opt = OptionalNames()) {
-    std::map<std::string, std::any> all(opt); 
+    std::unordered_map<std::string, std::any> all(opt); 
     for(auto name : bools)
         all[name] = false;
     return all;
@@ -89,8 +90,10 @@ void Parser::valid_pos(size_t positional, VecOptional& vopt) {
 
 void Parser::add(RequiredNames& names, size_t positional, const VecOptional& vopt) {
     valid_pos(positional, vopt);
-    for (auto name : names)
+    for (auto name : names) {
         argmap[name] = Argument();
+        required.insert(name);
+    }
 }
 
 void Parser::add(OptionalNames& names, size_t positional, const VecOptional& vopt) {
@@ -117,14 +120,25 @@ void Parser::put(const std::string& name, T& current) {
     (param->second).put(current, name);
 }
 
-void Parser::parse_arguments(const std::vector<std::string>& arguments) {
+template<typename T>
+T Parser::get(const std::string& name) {
+    T var;
+    put(name, var);
+    return var;
+}
+
+void Parser::parse_arguments(const std::vector<std::string>& arguments, bool validate) {
     std::string name;
     int index = 0;
+    std::unordered_set<std::string> required_found;
+
     for (auto arg : arguments) {
         if (!name.empty()) {
             if (arg[0] == '-')
                 throw std::invalid_argument(name + " expected an argument, but was followed with " + arg);      
             set(name, arg);
+            if(validate && required.count(name))
+                required_found.insert(name);
             name = "";
         } else if (arg[0] == '-') {
             arg.erase(0, arg.find_first_not_of('-'));
@@ -142,12 +156,19 @@ void Parser::parse_arguments(const std::vector<std::string>& arguments) {
     }
     if (!name.empty())
         throw std::invalid_argument(name + " expected an argument, but none are left!");
+    if(validate && required_found.size() != required.size()) {
+        std::string error("-E- Missing required arguments: ");
+        for(std::string name : required)
+            if( !required_found.count(name) )
+                error += name + " ";
+        throw std::invalid_argument(error);
+    }
 }
 
-void Parser::parse_arguments(int argc, const char** argv) {
-    parse_arguments(std::vector<std::string>(argv + 1, argv + argc));
+void Parser::parse_arguments(int argc, char** argv, bool validate) {
+    parse_arguments(std::vector<std::string>(argv + 1, argv + argc), validate);
 }
 
 #include"parser_template_helpers.hpp"
 
-#endif /* ARGLIST_HPP */
+#endif /* PARSER_HPP */

@@ -4,8 +4,8 @@
 #include"argument.h"
 #include<vector>
 #include<tuple>
-#include<set>
-#include<map>
+#include<unordered_set>
+#include<unordered_map>
 // Syntactic sugar types
 
 template<typename F, typename... Ts>
@@ -15,9 +15,9 @@ struct ArgumentPack {
     const std::tuple<Ts&...> args;
 };
 
-typedef const std::set<std::string> Booleans;
-typedef const std::set <std::string> RequiredNames;
-typedef const std::map<std::string, std::any> OptionalNames;
+typedef const std::unordered_set<std::string> Booleans;
+typedef const std::unordered_set <std::string> RequiredNames;
+typedef const std::unordered_map<std::string, std::any> OptionalNames;
 typedef const std::vector<std::any> VecOptional;
 
 class Parser {
@@ -45,9 +45,12 @@ class Parser {
 
     template<typename T>
     void put(const std::string& name, T& var);
+    
+    template<typename T>
+    T get(const std::string& name);
 
-    void parse_arguments(const std::vector<std::string>&);
-    void parse_arguments(int argc, const char** argv);
+    void parse_arguments(const std::vector<std::string>&, bool validate=true);
+    void parse_arguments(int argc, char** argv, bool validate=true);
 
     private:
 
@@ -58,9 +61,10 @@ class Parser {
     
     Argument& find(const std::string name); 
 
-    std::map<const std::string, Argument> argmap;
+    std::unordered_map<std::string, Argument> argmap;
     std::vector<Argument> argvec;
-    std::set<std::string> booleans;
+    std::unordered_set<std::string> booleans;
+    std::unordered_set<std::string> required;
 };
 
 #include"parser.hpp"
