@@ -26,11 +26,13 @@ struct vec_collect_arguments<T> {
     }
 };
 
+#include"icpc_helpers.hpp"
+
 template<typename S, typename T, typename... Ts>
 struct map_collect_arguments {
     map_collect_arguments(Parser& args, S& name, T& current,
                           Ts&... rest) {
-        args.put(name, current);
+        args.put(std::string(name), current);
         map_collect_arguments<Ts...>(args, rest...);
     }
 };
@@ -38,15 +40,15 @@ struct map_collect_arguments {
 template<typename S, typename T>
 struct map_collect_arguments<S, T> {
     map_collect_arguments(Parser& args, S& name, T& current) {
-        args.put(name, current);
+        args.put(std::string(name), current);
     }
 };
 
-void get_names(std::vector<std::string>& help) {}
+void get_names(HelpList& help) {}
 
 template<typename S, typename T, typename... Ts>
-void get_names(std::vector<std::string>& help, const S& str, T& var, Ts... rest) {
-    help.push_back(str);
+void get_names(HelpList& help, const S& str, T& var, Ts... rest) {
+    help.emplace_back(str);
     get_names(help, rest...);
 }
 
@@ -54,31 +56,39 @@ auto get_variables(Parser& args) { return std::make_tuple(); }
 
 template<typename S, typename T, typename... Ts>
 auto get_variables(Parser& args, const S& str, T& var, Ts... rest) {
-    args.put(str, var);
+    args.put(std::string(str), var);
     return std::tuple_cat(std::make_tuple(var), get_variables(args, rest...));
 }
+
 
 template<typename T>
 struct pack_collect_arguments {
     pack_collect_arguments(Parser& args, const T& argument_pack) {
-        std::apply([&args](auto &... elements) {args.collect_named(elements...);}, argument_pack.args);
+        apply< std::tuple_size< decltype(argument_pack.args) >::value >(
+            [&args](auto &... elements) {args.collect_named(elements...);}, argument_pack.args);
     }
 };
 
 template<typename T>
-void runPack(Parser& args, std::vector<std::string>& help, T current) {
-    std::apply([&help](auto &... v) {return get_names(help, v...);}, current.args);
+void runPack(Parser& args, HelpList& help, T current) {
+    apply< std::tuple_size< decltype(current.args) >::value >(
+        [&help](auto &... v) {return get_names(help, v...);}, current.args);
     
-    pack_collect_arguments(args, current);
-    auto res = std::apply([&args](auto &... v) {return get_variables(args, v...);}, current.args);
-    std::apply([current](auto &... v) { current.run(v...); }, res);
+    pack_collect_arguments<T>(args, current);
+
+    //auto res =  Will not work with icpc
+    apply< std::tuple_size< decltype(current.args) >::value >(
+        [&args](auto &... v) {return get_variables(args, v...);}, current.args);
+
+    // Again, an icpc hack...
+    apply_every_other< std::tuple_size< decltype(current.args) >::value >( current.run , current.args);
 }
 
 template<typename T, typename... Ts>
 struct packs_collect_arguments {
-    packs_collect_arguments(Parser& args, HelpGenerator packs_help, const T& current, 
+    packs_collect_arguments(Parser& args, HelpGenerator& packs_help, const T& current, 
                             const Ts&... arg_packs) {
-        std::vector<std::string> help;
+        HelpList help;
         try {
             runPack(args, help, current);
         } catch (const std::exception e) {
@@ -88,25 +98,25 @@ struct packs_collect_arguments {
     }
 };
 
-#include<iostream>
 template<typename T>
 struct packs_collect_arguments<T> {
     packs_collect_arguments(Parser& args, HelpGenerator& packs_help, const T& current) {
-        std::vector<std::string> help;
+        HelpList help;
         try {
             runPack(args, help, current);
         } catch (const std::exception e) {
             packs_help.push_back(help);
             unsigned int count = 0;
-            std::cout<<"-E- Could not fill any argument pack (missing required parameters). Options were:\n";
+            std::stringstream error;
+            error<<"\n-E- Could not fill any argument pack (missing required parameters). Options were:\n";
             for(auto pack_names : packs_help) {
-                std::cout<<"Pack "<<count<<":\n    ";
+                error<<"Pack "<<count<<":\n    ";
                 for(auto name : pack_names)
-                    std::cout<<name<<" "; 
-                std::cout<<"\n";
+                    error<<name<<" "; 
+                error<<"\n";
                 ++count;
             }
-            exit(1);
+            throw std::invalid_argument(error.str());
         }
     }
 };

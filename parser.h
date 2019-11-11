@@ -6,19 +6,22 @@
 #include<tuple>
 #include<unordered_set>
 #include<unordered_map>
+#include<functional> // To make icpc work...
 // Syntactic sugar types
 
 template<typename F, typename... Ts>
 struct ArgumentPack {
-    ArgumentPack(const F& func, Ts&... args) : run(func), args(args...) {}
+    ArgumentPack(const F& func, Ts&... args) : run(func), args(args...) {
+            //std::get<0>(this->args) = 3; 
+        }
     const F& run;
-    const std::tuple<Ts&...> args;
+    const std::tuple<std::reference_wrapper<Ts>...> args;
 };
 
 typedef const std::unordered_set<std::string> Booleans;
 typedef const std::unordered_set <std::string> RequiredNames;
-typedef const std::unordered_map<std::string, std::any> OptionalNames;
-typedef const std::vector<std::any> VecOptional;
+typedef const std::unordered_map<std::string, boost::any> OptionalNames;
+typedef const std::vector<boost::any> VecOptional;
 
 class Parser {
     public:
@@ -43,9 +46,13 @@ class Parser {
     template<typename... Ts>
     void collect_positional(Ts&... lvalues);
 
+    // icpc compatibility
+    template<typename T>
+    void put(const std::string& name, std::reference_wrapper<T> current);
+
     template<typename T>
     void put(const std::string& name, T& var);
-    
+   
     template<typename T>
     T get(const std::string& name);
 

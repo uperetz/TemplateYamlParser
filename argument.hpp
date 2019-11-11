@@ -31,10 +31,10 @@ class Argument::RequiredException: public std::exception {
 template<typename T>
 T Argument::put(T& lvalue, const std::string& name, int index) {
     if (repr.empty()) {
-        if (default_value.has_value())
+        if (!default_value.empty())
             try {
-                lvalue = std::any_cast<T>(default_value);
-            } catch (std::bad_any_cast e) {
+                lvalue = boost::any_cast<T>(default_value);
+            } catch (boost::bad_any_cast e) {
                 throw std::invalid_argument("Trying to derefence argument default value with wrong value type. Make sure the type matches given default value!" + debug_argument(name, index));
             }
         else

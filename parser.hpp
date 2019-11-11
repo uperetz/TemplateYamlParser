@@ -6,7 +6,7 @@
 #include<algorithm>
 
 OptionalNames add_bool_options(Booleans bools, OptionalNames& opt = OptionalNames()) {
-    std::unordered_map<std::string, std::any> all(opt); 
+    std::unordered_map<std::string, boost::any> all(opt); 
     for(auto name : bools)
         all[name] = false;
     return all;
@@ -56,7 +56,8 @@ void Parser::set(unsigned int index, const std::string& value) {
     argvec[index].set(value);
 }
 
-typedef std::vector<std::vector<std::string>> HelpGenerator;
+typedef std::vector<std::string> HelpList;
+typedef std::vector<HelpList> HelpGenerator;
 
 template<typename S, typename T, typename... Ts>
 struct map_collect_arguments;
@@ -110,6 +111,15 @@ Argument& Parser::find(const std::string name) {
     if (arg_it == argmap.end())
         throw std::invalid_argument("argument '" + name + "' not found in argument list!");
     return arg_it->second;
+}
+
+//icpc compatibility
+template<typename T>
+void Parser::put(const std::string& name, std::reference_wrapper<T> current) {
+    auto param = argmap.find(name);
+    if(param == argmap.end())
+        throw std::invalid_argument("Did not find " + std::string(name) + " in argument list!");
+    (param->second).put(current.get(), name);
 }
 
 template<typename T>

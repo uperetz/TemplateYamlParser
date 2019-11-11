@@ -1,5 +1,4 @@
 #include<iostream>
-#include<any>
 #include"parser.h"
 #include<stdint.h>
 #include<string>
@@ -51,7 +50,7 @@ int main(int argc, char* argv[]) {
                        //"uint64_t", a,
                        "char", e,
                        "int", d);
-    std::cout<<" : "<<" : "<<e<<" : "<<d<<"\n";
+    std::cout<<e<<" : "<<d<<"\n";
 
     std::cout<<"\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n";
 

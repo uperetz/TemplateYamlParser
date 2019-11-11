@@ -2,8 +2,9 @@
 #define ARGUMENT_H
 
 #include<string>
-#include<any>
 #include<stdexcept>
+#include<boost/any.hpp>
+// #include<any> Does not work on icpc...
 
 class Argument {
     public:
@@ -11,7 +12,7 @@ class Argument {
     class RequiredException;
 
     Argument() {}
-    Argument(std::any default_value) : default_value(default_value) {}
+    Argument(boost::any default_value) : default_value(default_value) {}
 
     void set(const std::string& representation) { repr = representation; }
 
@@ -24,7 +25,7 @@ class Argument {
     void cast_repr(T&);
 
     std::string repr;
-    std::any default_value;
+    boost::any default_value;
 };
 
 #include"argument.hpp"
