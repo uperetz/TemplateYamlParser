@@ -6,6 +6,7 @@
 #include<tuple>
 #include<unordered_set>
 #include<unordered_map>
+#include<yaml-cpp/yaml.h>
 #include<functional> // To make icpc work...
 // Syntactic sugar types
 
@@ -19,7 +20,7 @@ struct ArgumentPack {
 };
 
 typedef const std::unordered_set<std::string> Booleans;
-typedef const std::unordered_set <std::string> RequiredNames;
+typedef const std::unordered_set<std::string> RequiredNames;
 typedef const std::unordered_map<std::string, boost::any> OptionalNames;
 typedef const std::vector<boost::any> VecOptional;
 
@@ -56,15 +57,26 @@ class Parser {
     template<typename T>
     T get(const std::string& name);
 
+    // No positional validation yet.
     void parse_arguments(const std::vector<std::string>&, bool validate=true);
     void parse_arguments(int argc, char** argv, bool validate=true);
+    // No support for inner structures, variables are "flattened".
+    void parse_arguments(const std::string& yaml_path, bool validate=true);
+
+    // Helper method for accepting -y path_to_yaml 
+    void parse_argv_yaml(int argc, char** argv, bool validate=true);
 
     private:
 
     void valid_pos(size_t positional, VecOptional& vopt);
 
     void add(RequiredNames& names, size_t positional = 0, const VecOptional& vopt = VecOptional()); 
-    void add(OptionalNames& names, size_t positional, const VecOptional& vopt); 
+    void add(OptionalNames& names, size_t positional, const VecOptional& vopt);
+
+    void parse_yaml(const YAML::Node& root, std::unordered_set<std::string>& required_found,
+                    bool validate, const std::string& current=std::string(), int index=-1);
+
+    void check_required(const std::unordered_set<std::string>& required_found);
     
     Argument& find(const std::string name); 
 

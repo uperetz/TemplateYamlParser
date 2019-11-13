@@ -109,7 +109,7 @@ void Parser::add(OptionalNames& names, size_t positional, const VecOptional& vop
 Argument& Parser::find(const std::string name) {
     auto arg_it = argmap.find(name);
     if (arg_it == argmap.end())
-        throw std::invalid_argument("argument '" + name + "' not found in argument list!");
+        throw std::invalid_argument("got argument '" + name + "' which is not found in argument list!");
     return arg_it->second;
 }
 
@@ -166,13 +166,56 @@ void Parser::parse_arguments(const std::vector<std::string>& arguments, bool val
     }
     if (!name.empty())
         throw std::invalid_argument(name + " expected an argument, but none are left!");
-    if(validate && required_found.size() != required.size()) {
+    if(validate) check_required(required_found);
+}
+
+// Does not support yet inner required arguments
+void Parser::parse_arguments(const std::string& yaml_path, bool validate) {
+    YAML::Node root = YAML::LoadFile(yaml_path);
+    std::unordered_set<std::string> required_found;
+
+    parse_yaml(root, required_found, validate);
+    if(validate) check_required(required_found);
+}
+
+void Parser::parse_yaml(const YAML::Node& root, std::unordered_set<std::string>& required_found,
+                       bool validate, const std::string& current, int index) {
+    if(!root) return;
+
+    if(root.IsScalar()) {
+        if(!current.empty()) set(current, root.Scalar());
+        else set(index, root.Scalar());
+        return;
+    }
+
+    if(root.IsSequence()) {
+        for(auto it = root.begin(); it != root.end(); ++it)
+            parse_yaml(*it, required_found, validate, "", ++index);
+    } else if(root.IsMap()) {
+        for(auto it = root.begin(); it != root.end(); ++it) {
+            if(validate && required.count(it->first.Scalar()))
+                required_found.insert(it->first.Scalar());
+            parse_yaml(it->second, required_found, validate, it->first.Scalar());
+        }
+    } else {
+        throw std::invalid_argument("-E- Improperly constructed YAML!");
+    }
+}
+
+void Parser::check_required(const std::unordered_set<std::string>& required_found) {
+    if(required_found.size() != required.size()) {
         std::string error("-E- Missing required arguments: ");
         for(std::string name : required)
             if( !required_found.count(name) )
                 error += name + " ";
         throw std::invalid_argument(error);
     }
+}
+
+void Parser::parse_argv_yaml(int argc, char **argv, bool validate) {
+    if(argc != 3 || std::string(argv[1]) != "-y")
+        throw std::invalid_argument("-E- Usage: program -y /path/to/yaml");
+    parse_arguments(argv[2]);
 }
 
 void Parser::parse_arguments(int argc, char** argv, bool validate) {
