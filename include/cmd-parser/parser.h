@@ -10,6 +10,8 @@
 #include<functional> // To make icpc work...
 // Syntactic sugar types
 
+namespace CMD {
+
 template<typename F, typename... Ts>
 struct ArgumentPack {
     ArgumentPack(const F& func, Ts&... args) : run(func), args(args...) {
@@ -85,6 +87,8 @@ class Parser {
     std::unordered_set<std::string> booleans;
     std::unordered_set<std::string> required;
 };
+
+} // CMD
 
 #include"parser.hpp"
 

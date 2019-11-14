@@ -5,6 +5,8 @@
 #include"argument.h"
 #include<sstream>
 
+namespace CMD {
+
 std::string debug_argument(const std::string& name = "", int index = -1) {
     return " failed on " + (name.empty() ?
                                (index > -1 ?
@@ -47,6 +49,8 @@ T Argument::put(T& lvalue, const std::string& name, int index) {
 template<typename T>
 void Argument::cast_repr(T& lvalue) {
     std::stringstream(repr) >> lvalue;
+}
+
 }
 
 #endif /* ARGUMENT_HPP */

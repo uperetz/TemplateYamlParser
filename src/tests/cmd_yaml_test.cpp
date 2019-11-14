@@ -1,8 +1,8 @@
-#include"parser.h"
+#include"cmd-parser/parser.h"
 #include<iostream>
 
 int main(int argc, char **argv) {
-    Parser parser(RequiredNames{"c"}, OptionalNames{{"aba", 3}});
+    CMD::Parser parser(CMD::RequiredNames{"c"}, CMD::OptionalNames{{"aba", 3}});
     parser.parse_argv_yaml(argc, argv);
     int aba;
     char c;

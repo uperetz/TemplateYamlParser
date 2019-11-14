@@ -6,6 +6,8 @@
 #include<boost/any.hpp>
 // #include<any> Does not work on icpc...
 
+namespace CMD {
+
 class Argument {
     public:
     
@@ -27,6 +29,8 @@ class Argument {
     std::string repr;
     boost::any default_value;
 };
+
+} // CMD
 
 #include"argument.hpp"
 

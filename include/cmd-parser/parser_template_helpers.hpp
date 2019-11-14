@@ -3,6 +3,8 @@
 
 #include"parser.hpp"
 
+namespace CMD {
+
 template<typename T, typename... Ts>
 struct vec_collect_arguments {
     vec_collect_arguments(std::vector<Argument>::iterator pos,
@@ -120,4 +122,7 @@ struct packs_collect_arguments<T> {
         }
     }
 };
+
+} // CMD
+
 #endif /* ARGUMENT_TEMPLATE_HELPER_HPP */

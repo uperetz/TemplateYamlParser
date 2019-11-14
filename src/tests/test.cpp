@@ -1,5 +1,5 @@
 #include<iostream>
-#include"parser.h"
+#include"cmd-parser/parser.h"
 #include<stdint.h>
 #include<string>
 #include<vector>
@@ -23,12 +23,12 @@ int main(int argc, char* argv[]) {
     int d;
     char e;
    
-    RequiredNames req{"int", "string", "uint32_t"};
-    OptionalNames opt{ {"char", 'c'} };
-    Parser argm(req, opt, 5, {std::string("hi"), 21, 'a'});
+    CMD::RequiredNames req{"int", "string", "uint32_t"};
+    CMD::OptionalNames opt{ {"char", 'c'} };
+    CMD::Parser argm(req, opt, 5, {std::string("hi"), 21, 'a'});
 
-    Booleans bla{"abc", "def"};
-    Booleans bl(bla);
+    CMD::Booleans bla{"abc", "def"};
+    CMD::Booleans bl(bla);
 
     // Comment one of me to see required errors
     argm.set("int", "3");
@@ -39,10 +39,10 @@ int main(int argc, char* argv[]) {
     argm.set(1, "1");
 
     argm.run_one_of(
-        ArgumentPack(f1, "int", x, 
-                         "char", w),
-        ArgumentPack(f2, "uint32_t", y,
-                         "string", z)
+        CMD::ArgumentPack(f1, "int", x, 
+                              "char", w),
+        CMD::ArgumentPack(f2, "uint32_t", y,
+                              "string", z)
     );
     
     // argm.set("uint64_t", "21"); Uncomment to see not in argument list
@@ -54,9 +54,9 @@ int main(int argc, char* argv[]) {
 
     std::cout<<"\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n";
 
-    Parser p = Parser( RequiredNames{"int", "string", "uint32_t"},
-                       OptionalNames{ {"std::string", std::string("Hello world")} },
-                       Booleans{"bool"}, 3);//, VecOptional{std::string("astring")});
+    CMD::Parser p = CMD::Parser( CMD::RequiredNames{"int", "string", "uint32_t"},
+                       CMD::OptionalNames{ {"std::string", std::string("Hello world")} },
+                       CMD::Booleans{"bool"}, 3);//, CMD::VecOptional{std::string("astring")});
 
     std::string f;
 
@@ -72,9 +72,9 @@ int main(int argc, char* argv[]) {
     
     std::cout<<"\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n";
     // ./test -int 3 -string ab -uint32_t 101 aa 2 a
-    p = Parser( RequiredNames{"int", "string", "uint32_t"},
-                OptionalNames{ {"std::string", std::string("Hello world")} },
-                Booleans{"bool"}, 3, VecOptional{std::string("astring")});
+    p = CMD::Parser( CMD::RequiredNames{"int", "string", "uint32_t"},
+                CMD::OptionalNames{ {"std::string", std::string("Hello world")} },
+                CMD::Booleans{"bool"}, 3, CMD::VecOptional{std::string("astring")});
     p.parse_arguments(argc, argv, false); // Remove false for validation.
     p.collect_named("bool", b,
                     "int", x,

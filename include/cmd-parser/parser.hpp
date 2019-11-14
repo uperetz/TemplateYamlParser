@@ -5,6 +5,8 @@
 #include"parser.h"
 #include<algorithm>
 
+namespace CMD {
+
 OptionalNames add_bool_options(Booleans bools, OptionalNames& opt = OptionalNames()) {
     std::unordered_map<std::string, boost::any> all(opt); 
     for(auto name : bools)
@@ -221,6 +223,8 @@ void Parser::parse_argv_yaml(int argc, char **argv, bool validate) {
 void Parser::parse_arguments(int argc, char** argv, bool validate) {
     parse_arguments(std::vector<std::string>(argv + 1, argv + argc), validate);
 }
+
+} // CMD
 
 #include"parser_template_helpers.hpp"
 
