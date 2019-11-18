@@ -1,2 +1,6 @@
-- c: m
-- aba: 30
+first: 3
+third:
+    - 2
+    - CHAR: "abc"
+#      LONG: 9.01 break test
+      LONG: 901

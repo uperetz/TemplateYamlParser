@@ -5,68 +5,83 @@
 #include<initializer_list>
 #include<memory>
 #include<vector>
+#include<unordered_map>
+#include<unordered_set>
 #include<iostream>
+#include<any>
 
-namespace YAML {
+namespace CMD {
 
 using Dependencies = const std::vector<std::string>;
-    
+
 class Argument {
     public:
     enum class Type {SEQ, MAP, VAL};
 
-    Argument(bool required, Dependencies& deps) : required(required), dependencies(deps) {}
+    Argument(Dependencies& deps) : dependencies(deps) {}
    
     virtual Type type() = 0;
-    template<typename T>
-    T get() {}
+    virtual std::ostream& print(std::ostream& os, const std::string& spaces = std::string()) = 0;
     
-    template<typename T>
-    T& begin();
-    template<typename T>
-    T& end();
-
-    bool is_required() {return required;}
     void print_deps() { for(auto d : dependencies) std::cout<<d<<"\n";}
-    virtual std::ostream& print(std::ostream& os) = 0;
-
-    friend std::ostream& operator<<(std::ostream& os, Argument& arg);
 
     protected:
-    bool required = true;
     Dependencies dependencies;
 };
 
 class Sequence : public Argument {
     public:
     template<typename... Ts>
-    Sequence(bool required, Dependencies& dependencies, const Ts&... args);
+    Sequence(Dependencies& dependencies, Ts&&... args);
 
     virtual Type type() {return Type::SEQ;}
-    virtual std::ostream& print(std::ostream& os);
+    virtual std::ostream& print(std::ostream& os, const std::string& spaces = std::string());
+    
+    Argument& operator[](size_t index);
 
     private:
-    std::vector<std::unique_ptr<Argument>> args;
+    std::vector<std::shared_ptr<Argument>> args;
 };
 
-template<typename T>
+class Map : public Argument {
+    public:
+    template<typename... Ts>
+    Map(Dependencies& dependencies, Ts&&... args);
+
+    virtual Type type() {return Type::MAP;}
+    virtual std::ostream& print(std::ostream& os, const std::string& spaces = std::string());
+    
+    Argument& operator[](const std::string& key);
+    Argument& operator[](std::nullptr_t) = delete;
+
+    private:
+    std::unordered_map<std::string, std::shared_ptr<Argument>> args;
+};
+
 class Scalar : public Argument {
     public:
-    Scalar(bool required = true, Dependencies& deps = Dependencies()) : Argument(required, deps) {}
+    Scalar(Dependencies& deps = Dependencies()) : Argument(deps) {}
+    Scalar(const char*  default_val, Dependencies& deps = Dependencies())
+           : Argument(deps), val(std::string(default_val)) {}
+    template<typename T>
+    Scalar(T default_val, Dependencies& deps = Dependencies()) : Argument(deps), val(default_val) {}
     
     virtual Type type() {return Type::VAL;}
-    virtual std::ostream& print(std::ostream& os);
-    T get();
-    void set(const std::string& value);
+    virtual std::ostream& print(std::ostream& os, const std::string& spaces = std::string());
+  
+    void set_repr(const std::string& repr);
+    template<typename T>
+    void set(const std::string& repr);
+    template<typename T>
+    T get(T&);
+    const std::string& get_repr() {return repr;}
 
-    bool isnull() {return null;}
-    Scalar<T>& operator=(const Scalar<T>& other);
-
-    T val;
-    bool null = true;
+    private:
+    std::any val;
+    std::string repr;
 };
 
-} // YAML
+} // CMD
 
 #include"./argument.hpp"
 
