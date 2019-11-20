@@ -4,6 +4,12 @@
 #include"argument.h"
 
 namespace CMD {
+template<typename T>
+class ArgPath; 
+
+template<typename MapOrSeq, typename, typename... Ts>
+ArgPath<MapOrSeq&> partial_path(const Ts&... args);
+
 // Variant linked list
 template<typename T>
 class ArgPath {
@@ -11,7 +17,7 @@ class ArgPath {
     enum class Type {Index, Key, Leaf};
 
     /* constructors */
-    ArgPath() : type(Type::Leaf) {}
+    ArgPath();
     template<typename... Ts>
     ArgPath(const size_t& index, const Ts&... rest);
     template<typename... Ts>
@@ -30,17 +36,19 @@ class ArgPath {
     /* get arguments */
     template<typename A,
              typename = typename std::enable_if<std::is_base_of<Argument, A>::value>::type>
-    void parse_yaml(A&, T& var);
+    void parse_yaml(A&, T& var) const;
     template<typename A,
              typename = typename std::enable_if<std::is_base_of<Argument, A>::value>::type>
-    T parse_yaml(A&);
+    T parse_yaml(A&) const;
     
     /* helper */
-    void parse_yaml(const ArgPath&, Sequence&, T& var);
-    void parse_yaml(const ArgPath&, Map&, T& var);
-    void parse_yaml(const ArgPath&, Scalar&, T& var);
+    T parse_argument(const ArgPath& next, CMD::Argument&) const;
     
     private:
+    T parse_yaml(const ArgPath&, Sequence&) const;
+    T parse_yaml(const ArgPath&, Map&) const;
+    T parse_yaml(const ArgPath&, Scalar&) const;
+
     Type type;
     size_t index;
     std::string key;

@@ -26,20 +26,26 @@ class Parser {
     void parse_argv(int argc, char **argv);
     void parse_yaml(const std::string& path);
 
+    /* run functions */
+    template<typename F, typename... Ts>
+    void apply(const F& func, const Ts... ArgPaths) const;
+    template<typename F, typename... Ts>
+    void apply(const ArgPack<F, Ts...>) const;
+    template<typename... Ts>
+    void apply_one(const Ts... ArgPacks) const;
+    template<typename F, typename... Ts>
+    void apply_to_all(const F& func, const ArgPath<CMD::Sequence&>&, const ArgPath<Ts>&...) const;
+    template<typename F, typename... Ts>
+    void apply_to_all(const F& func, const ArgPath<CMD::Map&>&, const ArgPath<Ts>&...) const;
+
+    private:
     /* helper */
+    template<typename T>
+    void parse_argument(const T&, CMD::Argument&);
     void parse_yaml(const YAML::Node&, Sequence&);
     void parse_yaml(const YAML::Node&, Map&);
     void parse_yaml(const YAML::Node&, Scalar&);
    
-    /* run functions */
-    template<typename F, typename... Ts>
-    void apply(const F& func, Ts&... ArgPaths);
-    template<typename F, typename... Ts>
-    void apply(ArgPack<F, Ts...>);
-    template<typename... Ts>
-    void apply_one(Ts... ArgPacks);
-
-    private:
     std::shared_ptr<Argument> args;
 };
 

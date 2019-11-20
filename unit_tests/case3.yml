@@ -1,0 +1,10 @@
+scalar: 2
+map:
+    try1:
+        first: c
+        second: 123
+    try3:
+        second: 1
+    try2:
+        first: k
+        second: -3

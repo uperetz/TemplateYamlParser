@@ -13,7 +13,7 @@ int main(int argc, char **argv) {
     CMD::Scalar val;
     std::cout<<"Scalar stuff:\n";
     std::cout<<val;
-    
+
     std::cout<<"++++++++++++++++++++++++++++++++++++++++++\n";
     CMD::Sequence s(
         CMD::Dependencies(),
@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
 
     std::cout<<"Map :\n";
     std::cout<<m;
-    
+
     std::cout<<"+++++++++++++++++++++++++++++++++++++++++++++\n";
     CMD::ArgPath<float> t;
     // short x; // break
@@ -68,16 +68,16 @@ int main(int argc, char **argv) {
     t1.parse_yaml(m, x);
     std::cout<<x<<"\n";
     CMD::ArgPath<long> t2("third", 1, "LONG"); // using long->short will break
-    CMD::ArgPath<std::string> t3("third", 2); // 
+    CMD::ArgPath<std::string> t3("third", 2); //
     CMD::ArgPath<std::string> t4("third", 1, "CHAR"); // using std::string->char will break
     // short y; break (combine with long-> short above)
     long y;
     //This is how you would debug (not meant to be used)
-    //std::cout<< 
+    //std::cout<<
     //    dynamic_cast<CMD::Scalar*>(
     //        (& (*dynamic_cast<CMD::Map*>(
     //            &( (*dynamic_cast<CMD::Sequence*>(&m["third"]))[1] )
-    //            ))["LONG"]) 
+    //            ))["LONG"])
     //                )->get<long>(bla1)<<"\n";
     t2.parse_yaml(m, y);
     std::cout<<y<<" "<<t3.parse_yaml(m)<<" "<<t4.parse_yaml(m)<<"\n";
@@ -85,7 +85,7 @@ int main(int argc, char **argv) {
     CMD::Parser p(m);
     std::cout<<"FINAL\n";
     p.parse_yaml("/home/de781561/code/parser/igets_cases/case1.yml");
-    p.apply(f, t4, t2);
+    //p.apply(f, CMD::ArgPath<std::string>(0), t2); // break
     CMD::ArgPack a1(f, t4, t2);
     p.apply(a1);
     // Giving a function incompatible with one of the paths is a massive compiler error.
@@ -115,7 +115,7 @@ int main(int argc, char **argv) {
             "CHAR", CMD::Scalar('a')
         )
     );
-    
+
     auto l1 = [](int x, char y, const std::string& z) {
         std::cout<<"Ran l1("<<x<<","<<y<<","<<z<<")\n";};
 
@@ -132,5 +132,34 @@ int main(int argc, char **argv) {
             CMD::ArgPath<std::string>("LIST", 0)
         )
     );
+    
+    std::cout<<"+++++++++++++++++++++++++++++++++++++++++++++\n";
+
+    std::cout<<"System test 2:\n\n";
+    CMD::Map f_m_pars(
+        CMD::Dependencies(),
+        "second", CMD::Scalar{},
+        "first", CMD::Scalar('m')
+    );
+
+    CMD::Parser p1{
+        CMD::Map(
+            CMD::Dependencies(),
+            "seq", CMD::Sequence(
+                CMD::Dependencies(),
+                CMD::Scalar()
+            ),
+            "scalar", CMD::Scalar{},
+            "map", CMD::Map(
+                CMD::Dependencies(),
+                "try1", f_m_pars.clone(),
+                "try2", f_m_pars.clone(),
+                "try3", f_m_pars.clone()
+            )
+        )
+    };
+    p1.parse_yaml("/home/de781561/code/parser/igets_cases/case3.yml");
+    p1.apply_to_all(f1, CMD::partial_path<CMD::Map>("map"), CMD::ArgPath<char>("first"), CMD::ArgPath<long>("second"));
+    
     return 0;
 }
